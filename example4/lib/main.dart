@@ -1,4 +1,3 @@
-import 'package:example3/weather.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -16,80 +15,56 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       themeMode: ThemeMode.dark,
       theme: ThemeData.dark(),
-      home: const WeatherPage(),
+      home: const HomePage(),
     );
   }
 }
 
-typedef WeatherEmoji = String;
+const names = [
+  'Alice',
+  'Bob',
+  'Charlie',
+  'David',
+  'Eve',
+  'Fred',
+  'Ginny',
+  'Harriet',
+  'Ilena',
+  'Joseph',
+  'Kincaid',
+  'Larry'
+];
 
-enum City {
-  stockholm,
-  paris,
-  tokyo,
-}
-
-Future<WeatherEmoji> getWeather(City city) {
-  return Future.delayed(
+final tickerProvider = StreamProvider(
+  (ref) => Stream.periodic(
     const Duration(seconds: 1),
-    () => {
-      City.stockholm: '❄️',
-      City.paris: '⛈️',
-      City.tokyo: '💨',
-    }[city]!,
-  );
-}
+    (i) => i + 1,
+  ),
+);
 
-const unknownWeatherEmoji = '🤷🏾‍♂️';
-
-final currentCityProvider = StateProvider<City?>((ref) => null);
-
-final weatherProvider = FutureProvider<WeatherEmoji?>((ref) {
-  final city = ref.watch(currentCityProvider);
-  if (city != null) {
-    return getWeather(city);
-  }
-
-  return unknownWeatherEmoji;
-});
+final namesProvider = StreamProvider((ref) =>
+    ref.watch(tickerProvider.stream).map((count) => names.getRange(0, count)));
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentWeather = ref.watch(weatherProvider);
-
+    final names = ref.watch(namesProvider);
     return Scaffold(
-      appBar: AppBar(title: Text('HomePage')),
-      body: Column(
-        children: [
-          currentWeather.when(
-            data: (data) {
-              return Text(data ?? '', style: const TextStyle(fontSize: 50));
-            },
-            error: (error, _) {
-              return const Text('🤷🏾‍♂️');
-            },
-            loading: () => const CircularProgressIndicator(),
-          ),
-          Expanded(
-              child: ListView.builder(
-            itemBuilder: (ctx, index) {
-              final city = City.values[index];
-              final isSelected = city == ref.watch(currentCityProvider);
-              return ListTile(
-                title: Text(city.name),
-                trailing: isSelected ? const Icon(Icons.check) : null,
-                onTap: () {
-                  ref.read(currentCityProvider.notifier).state = city;
-                },
-              );
-            },
-            itemCount: City.values.length,
-          ))
-        ],
-      ),
+      appBar: AppBar(title: const Text('Stream Provider')),
+      body: names.when(
+          data: (data) {
+            final data_ = data.toList();
+            return ListView.builder(
+              itemBuilder: (ctx, index) => ListTile(
+                title: Text(data_[index]),
+              ),
+              itemCount: data_.length,
+            );
+          },
+          error: (_, __) => const Text('End of list reached'),
+          loading: () => const CircularProgressIndicator()),
     );
   }
 }
