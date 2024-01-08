@@ -39,8 +39,19 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Riverpod Notes'),
       ),
-      body: const Center(
-        child: Text('Hello, this is me!'),
+      body: ListView.builder(
+        itemBuilder: (context, index) {
+          Notes note = notesBox.getAt(index);
+          return ListTile(
+            title: Text(note.title ?? ''),
+            subtitle: Text(note.details ?? ''),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {},
+            ),
+          );
+        },
+        itemCount: notesBox.length,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

@@ -1,12 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notes_app/data/notes.dart';
 
+final noteStateNotifierProvider =
+    StateNotifierProvider.autoDispose<NotesStateNotifier, List<Notes>>(
+        (ref) => NotesStateNotifier());
+
 class NotesStateNotifier extends StateNotifier<List<Notes>> {
   NotesStateNotifier() : super([]);
 
   /// READ
   /// get all notes in the database and add it to the state
-  void getNotes() {}
+  void getNotes() {
+    // use the controller to get notes.
+    // update the state here
+  }
 
   /// CREATE
   /// add a note to the database and update the state
