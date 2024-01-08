@@ -25,9 +25,18 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Scaffold(
       appBar: AppBar(title: const Text('HomePage')),
-      body: const Center(child: Text('Hello, this is me!'),) );
+      body: const Center(
+        child: Text('Hello, this is me!'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Add Notes')));
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
