@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:notes_app/data/notes.dart';
 
 import 'notes/add_notes_screen.dart';
+import 'services/boxes.dart';
 
-void main() {
+const databaseName = 'notesBox';
+
+void main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(NotesAdapter());
+  notesBox = await Hive.openBox<Notes>(databaseName);
   runApp(const ProviderScope(child: MyApp()));
 }
 

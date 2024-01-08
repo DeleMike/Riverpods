@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
+part 'notes.g.dart';
+
 @immutable
+@HiveType(typeId: 1)
 class Notes {
+  @HiveField(0)
   final String uuid;
+  @HiveField(1)
   final String? title;
+  @HiveField(2)
   final String? details;
+  @HiveField(3)
   final List<String>? label;
 
   Notes({
