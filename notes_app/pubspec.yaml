@@ -39,6 +39,7 @@ dependencies:
   hive: ^2.2.3
   uuid: ^4.2.2
   hive_flutter:
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:

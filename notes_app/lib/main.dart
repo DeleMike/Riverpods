@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:notes_app/data/notes.dart';
+import 'package:notes_app/notes/get_quote_screen.dart';
 
 import 'notes/add_note_state_notifier.dart';
 import 'notes/add_notes_screen.dart';
@@ -41,6 +42,16 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Notes'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const GetQuoteScreen()));
+              },
+              icon: const Icon(Icons.content_paste_go_outlined))
+        ],
       ),
       body: notes.isEmpty
           ? const SizedBox(
@@ -65,7 +76,7 @@ class HomePage extends ConsumerWidget {
                                   title: note.title,
                                   details: note.details,
                                   tag: 'update',
-                                  note:note,
+                                  note: note,
                                 )));
                   },
                   title: Text(note.title ?? ''),
