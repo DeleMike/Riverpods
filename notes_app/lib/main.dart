@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:notes_app/data/notes.dart';
 
+import 'notes/add_note_state_notifier.dart';
 import 'notes/add_notes_screen.dart';
 import 'services/boxes.dart';
 
@@ -35,24 +36,39 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final notes = ref.watch(notesProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Notes'),
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          Notes note = notesBox.getAt(index);
-          return ListTile(
-            title: Text(note.title ?? ''),
-            subtitle: Text(note.details ?? ''),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {},
+      body: notes.isEmpty
+          ? const SizedBox(
+              child: Center(
+                  child: Text(
+                'No notes yet!',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 24,
+                ),
+              )),
+            )
+          : ListView.builder(
+              itemBuilder: (context, index) {
+                Notes note = notesBox.getAt(index);
+                return ListTile(
+                  title: Text(note.title ?? ''),
+                  subtitle: Text(note.details ?? ''),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      ref.read(notesProvider.notifier).deleteNote(note.uuid);
+                    },
+                  ),
+                );
+              },
+              itemCount: notes.length,
             ),
-          );
-        },
-        itemCount: notesBox.length,
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,

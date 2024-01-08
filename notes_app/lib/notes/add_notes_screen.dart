@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notes_app/controllers/note_controller.dart';
-
-import 'add_note_state_notifier.dart';
+import 'package:notes_app/notes/add_note_state_notifier.dart';
+import 'package:notes_app/services/notes_controller.dart';
 
 class Hello extends ConsumerStatefulWidget {
   const Hello({super.key});
@@ -27,21 +26,29 @@ class AddNotesScreen extends ConsumerStatefulWidget {
 
 class _AddNotesScreenState extends ConsumerState<AddNotesScreen> {
   final _formKey = GlobalKey<FormState>();
-  NoteController noteController = NoteController();
+  late NoteController noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    final notesNotifier = ref.read(notesProvider.notifier);
+    noteController = NoteController(notesNotifier);
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
-    final notes = ref.watch(noteStateNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Note'),
         actions: [
           IconButton(
-              onPressed: () {
+              onPressed: () async {
                 _formKey.currentState!.save();
-
-                // get values
-                noteController.addNote();
+                await noteController
+                    .saveNote(context)
+                    .then((value) => Navigator.of(context).pop());
               },
               icon: const Icon(Icons.save_rounded))
         ],
@@ -51,11 +58,11 @@ class _AddNotesScreenState extends ConsumerState<AddNotesScreen> {
         child: Column(
           children: [
             TextFormField(
-              style:
-                  TextStyle(fontSize: 25.0, height: 2.0, color: Colors.black),
-              decoration: InputDecoration(hintText: 'Enter header'),
+              style: const TextStyle(
+                  fontSize: 25.0, height: 2.0, color: Colors.black),
+              decoration: const InputDecoration(hintText: 'Enter header'),
               onSaved: (value) {
-                noteController.notesData['title'] = value;
+                noteController.formData['title'] = value ?? '';
               },
             ),
             Expanded(
@@ -65,10 +72,10 @@ class _AddNotesScreenState extends ConsumerState<AddNotesScreen> {
                   maxLines: null,
                   expands: true,
                   keyboardType: TextInputType.multiline,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       filled: true, hintText: 'Enter a message'),
                   onSaved: (value) {
-                    noteController.notesData['details'] = value;
+                    noteController.formData['details'] = value ?? '';
                   },
                 ),
               ),
