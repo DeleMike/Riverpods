@@ -57,6 +57,17 @@ class HomePage extends ConsumerWidget {
               itemBuilder: (context, index) {
                 Notes note = notesBox.getAt(index);
                 return ListTile(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddNotesScreen(
+                                  title: note.title,
+                                  details: note.details,
+                                  tag: 'update',
+                                  note:note,
+                                )));
+                  },
                   title: Text(note.title ?? ''),
                   subtitle: Text(note.details ?? ''),
                   trailing: IconButton(

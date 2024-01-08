@@ -38,13 +38,14 @@ class NotesStateNotifier extends StateNotifier<List<Notes>> {
   void updateNote(Notes existingNote) async {
     final notesBox = await _openBox;
 
-    // get index
-    final index = state.indexOf(state.firstWhere((note) {
+    // get index of existing note in state
+    final stateIndex = state.indexOf(state.reversed.firstWhere((note) {
       return note.uuid == existingNote.uuid;
     }));
 
     // change any param that changed
-    state[index] = existingNote;
+    state[stateIndex] = existingNote;
+    debugPrint('StateIndex - $stateIndex');
 
     final indexStorage = notesBox.values.toList().indexOf(notesBox.values
         .toList()

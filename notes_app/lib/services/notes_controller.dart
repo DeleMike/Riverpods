@@ -30,4 +30,8 @@ class NoteController {
       notesStateNotifier.newNote(note);
     }
   }
+
+  Future<void> editNote(BuildContext context, Notes note) async {
+    notesStateNotifier.updateNote(note);
+  }
 }
