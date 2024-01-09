@@ -12,7 +12,20 @@
           "package_name": "com.mikeinvents.instant_gram"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "424387176893-ds2a5uctjmac2rtfrhk5vjpron4atth2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mikeinvents.instant_gram",
+            "certificate_hash": "91b0e550722410125e324b4ab94f6b025cd115da"
+          }
+        },
+        {
+          "client_id": "424387176893-o6vf34hbgm188lrgq9q5lc98heminbpg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCyMVSyPyNulG8Mckqt0lRwoLEug6fbh7g"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "424387176893-o6vf34hbgm188lrgq9q5lc98heminbpg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "424387176893-ug003bi1sp5j73maa38hgto72l8fttc7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mikeinvents.instantGram"
+              }
+            }
+          ]
         }
       }
     }
