@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "424387176893",
+    "project_id": "instant-gram-mike-invents",
+    "storage_bucket": "instant-gram-mike-invents.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424387176893:android:ab5d774be117971f9acad4",
+        "android_client_info": {
+          "package_name": "com.mikeinvents.instant_gram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyMVSyPyNulG8Mckqt0lRwoLEug6fbh7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
