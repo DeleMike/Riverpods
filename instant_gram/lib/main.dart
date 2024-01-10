@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instant_gram/state/auth/backend/authenticator.dart';
+import 'package:instant_gram/state/auth/models/auth_result.dart';
+import 'package:instant_gram/state/auth/providers/auth_state_provider.dart';
+import 'package:instant_gram/state/auth/providers/is_logged_in_providers.dart';
 import 'firebase_options.dart';
 
 import 'dart:developer' as devtools show log;
@@ -14,7 +18,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -34,25 +38,50 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
           primarySwatch: Colors.blueGrey,
           indicatorColor: Colors.blueGrey),
-      home: const HomePage(),
       debugShowCheckedModeBanner: false,
+      home: Consumer(builder: (ctx, ref, _) {
+        final isLoggedIn =
+            ref.watch(authSateProvider).authResult == AuthResult.success;
+        isLoggedIn.log();
+        if (isLoggedIn) {
+          return const MainView();
+        }
+        return const LoginView();
+      }),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class MainView extends ConsumerWidget {
+  const MainView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('HomePage')),
+      appBar: AppBar(title: const Text('Main View')),
+      body: TextButton(
+        onPressed: () async {
+          await ref.read(authSateProvider.notifier).logout();
+        },
+        child: const Text('Logout'),
+      ),
+    );
+  }
+}
+
+class LoginView extends ConsumerWidget {
+  const LoginView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login View')),
       body: Column(
         children: [
           TextButton(
             onPressed: () async {
-              final result = await Authenticator().loginWithGoogle();
-              result.log();
+              final authStateNotifier = ref.read(authSateProvider.notifier);
+              await authStateNotifier.login();
             },
             child: const Text('Sign In With Google'),
           ),

@@ -24,6 +24,8 @@ class UserInfoStorage {
           .get();
 
       if (userInfo.docs.isNotEmpty) {
+        print('User already exist user ${displayName} info');
+
         await userInfo.docs.first.reference.update({
           FirebaseFieldName.displayName: displayName,
           FirebaseFieldName.email: email ?? '',
@@ -43,8 +45,11 @@ class UserInfoStorage {
           .collection(FirebaseCollectionName.users)
           .add(payload);
 
+      print('User does not exist, saved user ${displayName} info');
+
       return true;
-    } catch (e) {
+    } catch (e,s) {
+      print('There was an error saving user info: $e, $s');
       return false;
     }
   }
