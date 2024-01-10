@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:instant_gram/state/auth/backend/authenticator.dart';
 import 'firebase_options.dart';
+
+import 'dart:developer' as devtools show log;
+
+extension Log on Object {
+  void log() => devtools.log(toString());
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,15 +47,16 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('HomePage')),
-      body: const Center(
-        child: Text('Hello, this is me!'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Add Notes')));
-        },
-        child: const Icon(Icons.add),
+      body: Column(
+        children: [
+          TextButton(
+            onPressed: () async {
+              final result = await Authenticator().loginWithGoogle();
+              result.log();
+            },
+            child: const Text('Sign In With Google'),
+          ),
+        ],
       ),
     );
   }
