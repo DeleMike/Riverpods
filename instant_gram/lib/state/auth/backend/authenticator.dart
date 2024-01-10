@@ -20,13 +20,13 @@ class Authenticator {
   }
 
   Future<AuthResult> loginWithGoogle() async {
-    final GoogleSignIn googleSignIn = await GoogleSignIn(
+    final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: [Constants.emailScope],
     );
 
     final signInAccount = await googleSignIn.signIn();
     if (signInAccount == null) {
-      // the person doesn't have a Google Account
+      // the person doesn't have a Google Account or cancel operation
       return AuthResult.aborted;
     }
 
