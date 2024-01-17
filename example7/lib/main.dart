@@ -1,41 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    const MaterialApp(
+      home: Page1(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Page1 extends StatelessWidget {
+  const Page1({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      themeMode: ThemeMode.dark,
-      theme: ThemeData.dark(),
-      home: const HomePage(),
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(_createRoute());
+          },
+          child: const Text('Go!'),
+        ),
+      ),
     );
   }
 }
 
-class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => const Page2(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(-1.0, 0);
+      const end = Offset.zero;
+      const curve = Curves.easeOutBack;
+      const duration = Duration(seconds: 1);
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+        
+      );
+
+      
+    },
+    transitionDuration: const Duration(milliseconds: 600),
+  );
+}
+
+class Page2 extends StatelessWidget {
+  const Page2({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('HomePage')),
+      appBar: AppBar(),
       body: const Center(
-        child: Text('Hello, this is me!'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Add Notes')));
-        },
-        child: const Icon(Icons.add),
+        child: Text('Page 2'),
       ),
     );
   }
