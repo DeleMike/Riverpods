@@ -1,125 +1,204 @@
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:image_compare/image_compare.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Face Comparison',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: FaceComparisonScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class FaceComparisonScreen extends StatefulWidget {
+  const FaceComparisonScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<FaceComparisonScreen> createState() => _FaceComparisonScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _FaceComparisonScreenState extends State<FaceComparisonScreen> {
+  bool _facesMatch = false;
+  bool _hasLoaded = false;
 
-  void _incrementCounter() {
+  // Helper function to calculate distance between two points
+  double _calculateDistance(Point<int> point1, Point<int> point2) {
+    return (point1 - point2).distanceTo(Point<int>(0, 0));
+  }
+
+  Future<void> _compareImage() async {
+    // Initialize sources for the images
+    var image1 = File(_imagePath1);
+    var image2 = File(_imagePath2);
+
+    // Select an algorithm
+    var algorithm = ChiSquareDistanceHistogram();
+
+    // Compare the images
+    var difference =
+        await compareImages(src1: image1, src2: image2, algorithm: algorithm);
+
+    // Print the difference
+    print('Difference: ${difference * 100}%');
+  }
+
+  Future<void> _compareFaces() async {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _hasLoaded = false;
     });
+    final inputImage1 = InputImage.fromFilePath(_imagePath1);
+    final inputImage2 = InputImage.fromFilePath(_imagePath2);
+
+    final FaceDetector faceDetector = GoogleMlKit.vision.faceDetector();
+    final List<Face> faces1 = await faceDetector.processImage(inputImage1);
+    final List<Face> faces2 = await faceDetector.processImage(inputImage2);
+
+    if (faces1.isNotEmpty && faces2.isNotEmpty) {
+      // Assuming we have only one face per image for simplicity
+      final Face face1 = faces1.first;
+      final Face face2 = faces2.first;
+
+      // Calculate differences in bounding box size
+      final double sizeDifference =
+          (face1.boundingBox.width - face2.boundingBox.width).abs();
+
+      // Calculate differences in head Euler angles
+      final double eulerAngleXDifference =
+          (face1.headEulerAngleX! - face2.headEulerAngleX!).abs();
+      final double eulerAngleYDifference =
+          (face1.headEulerAngleY! - face2.headEulerAngleY!).abs();
+      final double eulerAngleZDifference =
+          (face1.headEulerAngleZ! - face2.headEulerAngleZ!).abs();
+
+      // print('Face1 left eye probability = ${face1.leftEyeOpenProbability}');
+      // print('Face2 left eye probability = ${face2.leftEyeOpenProbability}');
+
+      // print('Face1 right eye probability = ${face1.rightEyeOpenProbability}');
+      // print('Face2 right eye probability = ${face2.rightEyeOpenProbability}');
+
+      // print('Face1 smiling probability = ${face1.smilingProbability}');
+      // print('Face2 smiling probability = ${face2.smilingProbability}');
+
+      // // Calculate differences in eye open probabilities
+      // final double leftEyeOpenProbabilityDifference =
+      //     (face1.leftEyeOpenProbability! - face2.leftEyeOpenProbability!).abs();
+
+      // final double rightEyeOpenProbabilityDifference =
+      //     (face1.rightEyeOpenProbability ??
+      //             0.0 - face2.rightEyeOpenProbability!)
+      //         .abs();
+      // // Calculate differences in smiling probabilities
+      // final double smilingProbabilityDifference =
+      //     (face1.smilingProbability ?? 0.0 - face2.smilingProbability!).abs();
+
+      // Define thresholds for each property
+      const double sizeDifferenceThreshold = 0.1;
+      const double eulerAngleThreshold = 10.0;
+      // const double eyeOpenProbabilityThreshold = 0.1;
+      // const double smilingProbabilityThreshold = 0.1;
+
+      // Check if all differences are within acceptable thresholds
+      final bool sizeMatches = sizeDifference <= sizeDifferenceThreshold;
+      final bool eulerAnglesMatch =
+          eulerAngleXDifference <= eulerAngleThreshold &&
+              eulerAngleYDifference <= eulerAngleThreshold &&
+              eulerAngleZDifference <= eulerAngleThreshold;
+      // final bool eyeOpenProbabilitiesMatch =
+      //     leftEyeOpenProbabilityDifference <= eyeOpenProbabilityThreshold &&
+      //         rightEyeOpenProbabilityDifference <= eyeOpenProbabilityThreshold;
+      // final bool smilingProbabilitiesMatch =
+      //     smilingProbabilityDifference <= smilingProbabilityThreshold;
+
+      // Define the facial landmarks to compare (e.g., eyes, nose)
+
+      setState(() {
+        _facesMatch = sizeMatches && eulerAnglesMatch;
+      });
+    } else {
+      setState(() {
+        _facesMatch = false;
+      });
+    }
+
+    setState(() {
+      _hasLoaded = true;
+    });
+  }
+
+  String _imagePath1 = ''; // Path to first image
+  String _imagePath2 = ''; // Path to second image
+
+  Future<void> _getImage(ImageSource source, int imageIndex) async {
+    final imagePicker = ImagePicker();
+    final pickedImage = await imagePicker.pickImage(source: source);
+    if (pickedImage != null) {
+      setState(() {
+        if (imageIndex == 1) {
+          _imagePath1 = pickedImage.path;
+        } else {
+          _imagePath2 = pickedImage.path;
+        }
+        _facesMatch = false; // Reset faces match result
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Face Comparison'),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            ElevatedButton(
+              onPressed: () => _getImage(ImageSource.gallery, 1),
+              child: Text('Pick First Image'),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ElevatedButton(
+              onPressed: () => _getImage(ImageSource.gallery, 2),
+              child: Text('Pick Second Image'),
             ),
+            SizedBox(height: 20),
+            if (_imagePath1.isNotEmpty && _imagePath2.isNotEmpty)
+              ElevatedButton(
+                onPressed: _compareFaces,
+                child: Text('Compare Faces'),
+              ),
+            SizedBox(height: 20),
+            if (_imagePath1.isNotEmpty && _imagePath2.isNotEmpty)
+              Text(
+                !_hasLoaded
+                    ? ''
+                    : _facesMatch
+                        ? 'Faces Match!'
+                        : 'Faces Do Not Match!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: _facesMatch ? Colors.green : Colors.red,
+                ),
+              ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
